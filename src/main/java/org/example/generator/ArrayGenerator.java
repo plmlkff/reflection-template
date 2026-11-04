@@ -33,7 +33,7 @@ public class ArrayGenerator implements Generator {
     }
 
     private void validate(Class<?> target) {
-        if (target == null) throw new IllegalArgumentException();
-        if (!target.isArray()) throw new IllegalArgumentException();
+        if (target == null) throw new IllegalArgumentException("Type must not be null");
+        if (!target.isArray()) throw new IllegalArgumentException("Expected an array type: " + target.getTypeName());
     }
 }

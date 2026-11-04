@@ -18,13 +18,13 @@ public class PrimitiveGenerator implements Generator {
         validateClass(clazz);
 
         var valueGenerator = valueSuppliersByType.get(clazz);
-        if (valueGenerator == null) throw new OperationNotSupportedException();
+        if (valueGenerator == null) throw new OperationNotSupportedException("No generator for primitive type: " + clazz.getTypeName());
 
         return valueGenerator.get();
     }
 
     private static void validateClass(Class<?> clazz) {
-        if (clazz == null) throw new IllegalArgumentException();
-        if (!clazz.isPrimitive())  throw new IllegalArgumentException();
+        if (clazz == null) throw new IllegalArgumentException("Type must not be null");
+        if (!clazz.isPrimitive()) throw new IllegalArgumentException("Expected a primitive type: " + clazz.getTypeName());
     }
 }

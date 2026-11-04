@@ -30,7 +30,7 @@ public class ProxyGenerator implements Generator {
                         case "toString" -> clazz.getSimpleName() + "$proxy";
                         case "hashCode" -> System.identityHashCode(p);
                         case "equals" -> p == args[0];
-                        default -> throw new UnsupportedOperationException(m.getName());
+                        default -> throw new UnsupportedOperationException("Unsupported Object method: " + m.getName());
                     };
                 }
                 if (m.isDefault()) return InvocationHandler.invokeDefault(p, m, args);
@@ -53,7 +53,7 @@ public class ProxyGenerator implements Generator {
     }
 
     private void validate(Class<?> target) {
-        if (target == null) throw new IllegalArgumentException();
-        if (!target.isInterface()) throw new IllegalArgumentException();
+        if (target == null) throw new IllegalArgumentException("Type must not be null");
+        if (!target.isInterface()) throw new IllegalArgumentException("Expected an interface type: " + target.getTypeName());
     }
 }

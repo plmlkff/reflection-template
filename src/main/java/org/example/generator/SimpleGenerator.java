@@ -12,6 +12,7 @@ public class SimpleGenerator implements Generator {
     public Object generate(Type type) throws InvocationTargetException, InstantiationException, IllegalAccessException {
         var clazz = resolve(type, Map.of()).clazz();
         Constructor<?>[] constructors = clazz.getDeclaredConstructors();
+        if (constructors.length == 0) throw new IllegalArgumentException("No constructors: " + clazz.getTypeName());
 
         int randomConstructorIndex = new Random().nextInt(constructors.length);
         Constructor<?> randomConstructor = constructors[randomConstructorIndex];

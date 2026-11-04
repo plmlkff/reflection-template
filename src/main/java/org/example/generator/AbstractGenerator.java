@@ -13,6 +13,7 @@ public class AbstractGenerator implements Generator {
     private final Generator primitiveGenerator;
     private final Generator proxyGenerator;
     private final Generator arrayGenerator;
+    private final Generator enumGenerator;
     private final GenericGenerator genericGenerator;
     private final Map<Class<?>, Generator> type2specificGenerator;
 
@@ -21,6 +22,7 @@ public class AbstractGenerator implements Generator {
         this.primitiveGenerator = primitiveGenerator;
         this.proxyGenerator = new ProxyGenerator(this);
         this.arrayGenerator = new ArrayGenerator(this);
+        this.enumGenerator = new EnumGenerator();
         this.genericGenerator = new GenericGenerator(this, genericSpecificFactory.apply(this));
         this.type2specificGenerator = types2specificGenerator.entrySet().stream()
             .flatMap(e -> e.getKey().stream().map(t -> Map.entry(t, e.getValue())))
@@ -48,6 +50,7 @@ public class AbstractGenerator implements Generator {
 
         if (clazz.isPrimitive()) return primitiveGenerator.generate(clazz);
         if (clazz.isArray()) return arrayGenerator.generate(resolved);
+        if (clazz.isEnum()) return enumGenerator.generate(resolved);
         if (clazz.isInterface() && !genericGenerator.hasSpecificGenerator(clazz)) {
             return proxyGenerator.generate(resolved);
         }

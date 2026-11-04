@@ -1,5 +1,7 @@
 package org.example.classes;
 
+import java.util.Objects;
+
 public class Product {
     private String name;
     private double price;
@@ -31,18 +33,21 @@ public class Product {
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode();
+    public boolean equals(Object o) {
+        if (!(o instanceof Product product)) return false;
+        return Double.compare(price, product.price) == 0 && Objects.equals(name, product.name);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
+    public int hashCode() {
+        return Objects.hash(name, price);
     }
 
     @Override
     public String toString() {
-        return super.toString();
+        return "Product{" +
+            "name='" + name + '\'' +
+            ", price=" + price +
+            '}';
     }
-
 }

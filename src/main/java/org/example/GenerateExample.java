@@ -2,13 +2,13 @@ package org.example;
 
 
 import org.example.classes.Example;
-import org.example.generator.Generator;
+import org.example.generator.SimpleGenerator;
 
 public class GenerateExample {
     public static void main(String[] args) {
-        var gen = new Generator();
+        var gen = new SimpleGenerator();
         try {
-            Object generated = gen.generateValueOfType(Example.class);
+            Object generated = gen.generate(Example.class);
             System.out.println(generated);
         } catch (Throwable e) {
             throw new RuntimeException(e);

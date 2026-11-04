@@ -2,11 +2,15 @@ package org.example.generator;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
+import java.util.Map;
 import java.util.Random;
 
 public class SimpleGenerator implements Generator {
 
-    public Object generate(Class<?> clazz) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+    @Override
+    public Object generate(Type type) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+        var clazz = resolve(type, Map.of()).clazz();
         Constructor<?>[] constructors = clazz.getDeclaredConstructors();
 
         int randomConstructorIndex = new Random().nextInt(constructors.length);

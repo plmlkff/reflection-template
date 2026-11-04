@@ -1,6 +1,7 @@
 package org.example.generator;
 
 import javax.naming.OperationNotSupportedException;
+import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -12,7 +13,8 @@ public class PrimitiveGenerator implements Generator {
     }
 
     @Override
-    public Object generate(Class<?> clazz) throws OperationNotSupportedException {
+    public Object generate(Type type) throws OperationNotSupportedException {
+        var clazz = resolve(type, Map.of()).clazz();
         validateClass(clazz);
 
         var valueGenerator = valueSuppliersByType.get(clazz);

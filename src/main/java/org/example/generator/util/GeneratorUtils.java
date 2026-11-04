@@ -2,9 +2,13 @@ package org.example.generator.util;
 
 import org.example.generator.AbstractGenerator;
 import org.example.generator.Generator;
+import org.example.generator.Generator.ResolvedType;
 import org.example.generator.PrimitiveGenerator;
 import org.example.generator.ProxyGenerator;
 
+import javax.naming.OperationNotSupportedException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,8 +25,8 @@ public class GeneratorUtils {
     public static Generator buildAbstractGenerator() {
         return new AbstractGenerator(
             buildPrimitiveGenerator(),
-            buildProxyGenerator(),
-            buildSpecificGenerators()
+            buildSpecificGenerators(),
+            GeneratorUtils::buildSpecificGenericGenerators
         );
     }
 
@@ -42,7 +46,7 @@ public class GeneratorUtils {
     }
 
     public static Generator buildProxyGenerator() {
-        return new ProxyGenerator();
+        return new ProxyGenerator(buildAbstractGenerator());
     }
 
     public static Map<Set<Class<?>>, Generator> buildSpecificGenerators() {
@@ -60,14 +64,23 @@ public class GeneratorUtils {
 
         return Map.of(
             wrapper2primitive.keySet(), clazz -> primitiveGenerator.generate(wrapper2primitive.get(clazz)),
-            Set.of(String.class), new RandomStringGenerator(),
-            Set.of(List.class), new RandomListGenerator(),
-            Set.of(Map.class), new RandomMapGenerator()
+            Set.of(String.class), new RandomStringGenerator()
         );
     }
 
+    public static Map<Class<?>, Generator> buildSpecificGenericGenerators(Generator valueGenerator) {
+        return Map.of(
+            List.class, new RandomListGenerator(valueGenerator),
+            Map.class, new RandomMapGenerator(valueGenerator)
+        );
+    }
+
+    private static ResolvedType argument(ResolvedType type, int index) {
+        return type.bindings().getOrDefault(type.clazz().getTypeParameters()[index], new ResolvedType(Integer.class, Map.of()));
+    }
+
     private static class RandomStringGenerator implements Generator {
-        public String generate(Class<?> clazz) {
+        public String generate(Type type) {
             ThreadLocalRandom rnd = ThreadLocalRandom.current();
             var length = rnd.nextInt(MIN_STRING_LENGTH, MAX_STRING_LENGTH);
             var sb = new StringBuilder(length);
@@ -79,26 +92,40 @@ public class GeneratorUtils {
     }
 
     private static class RandomListGenerator implements Generator {
-        public List<Integer> generate(Class<?> clazz) {
-            ThreadLocalRandom rnd = ThreadLocalRandom.current();
-            var size = rnd.nextInt(MIN_COLLECTION_SIZE, MAX_COLLECTION_SIZE);
-            var list = new ArrayList<Integer>(size);
-            for (int i = 0; i < size; i++) {
-                list.add(rnd.nextInt());
-            }
+        private final Generator valueGenerator;
+
+        private RandomListGenerator(Generator valueGenerator) {
+            this.valueGenerator = valueGenerator;
+        }
+
+        @Override
+        public List<?> generate(Type type) throws InvocationTargetException, InstantiationException, IllegalAccessException, OperationNotSupportedException {
+            var elementType = argument(resolve(type, Map.of()), 0);
+            var size = ThreadLocalRandom.current().nextInt(MIN_COLLECTION_SIZE, MAX_COLLECTION_SIZE);
+            var list = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) list.add(valueGenerator.generate(elementType));
             return list;
         }
     }
 
     private static class RandomMapGenerator implements Generator {
-        public Map<Integer, Integer> generate(Class<?> clazz) {
-            ThreadLocalRandom rnd = ThreadLocalRandom.current();
-            var size = rnd.nextInt(MIN_COLLECTION_SIZE, MAX_COLLECTION_SIZE);
-            var list = new HashMap<Integer, Integer>();
+        private final Generator valueGenerator;
+
+        private RandomMapGenerator(Generator valueGenerator) {
+            this.valueGenerator = valueGenerator;
+        }
+
+        @Override
+        public Map<?, ?> generate(Type type) throws InvocationTargetException, InstantiationException, IllegalAccessException, OperationNotSupportedException {
+            var resolved = resolve(type, Map.of());
+            var keyType = argument(resolved, 0);
+            var valueType = argument(resolved, 1);
+            var size = ThreadLocalRandom.current().nextInt(MIN_COLLECTION_SIZE, MAX_COLLECTION_SIZE);
+            var map = new HashMap<>();
             for (int i = 0; i < size; i++) {
-                list.put(rnd.nextInt(), rnd.nextInt());
+                map.put(valueGenerator.generate(keyType), valueGenerator.generate(valueType));
             }
-            return list;
+            return map;
         }
     }
 }

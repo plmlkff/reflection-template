@@ -17,7 +17,7 @@ public class ProxyGenerator implements Generator {
                     case "toString" -> clazz.getSimpleName() + "$proxy";
                     case "hashCode" -> System.identityHashCode(p);
                     case "equals" -> p == args[0];
-                    default -> generate(m.getReturnType());
+                    default -> throw new UnsupportedOperationException();
                 };
             }
         );

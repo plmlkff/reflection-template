@@ -1,7 +1,11 @@
 package org.example.classes;
 
+import org.example.generator.Generatable;
+import org.example.generator.TriangleGenerator;
+
 import java.util.Objects;
 
+@Generatable(generator = TriangleGenerator.class)
 public class Triangle implements Shape {
     private double sideA;
     private double sideB;
